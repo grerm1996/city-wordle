@@ -1,0 +1,247 @@
+import { useState, useEffect, useRef, useCallback } from "react";
+import "./App.css";
+import { getBearing, haversineDistance } from "./functions.jsx";
+import TextField from "@mui/material/TextField";
+import Autocomplete from "@mui/material/Autocomplete";
+import SimpleMap from "./Map.jsx";
+
+function App() {
+  const [targetCity, setTargetCity] = useState("loading...");
+  const [inputGuess, setInputGuess] = useState("");
+  const [guessArchive, setGuessArchive] = useState([]);
+  const [suggestions, setSuggestions] = useState([]);
+  const [acIndex, setACIndex] = useState([]);
+  let modal = useRef(null);
+
+  useEffect(() => {
+    if (inputGuess === "") {
+      setSuggestions([]);
+    }
+  }, [inputGuess]);
+
+  const getNewTarget = useCallback(() => {
+    fetch("https://citywordle.fly.dev/", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+
+      credentials: "include",
+    })
+      .then(async (response) => {
+        if (!response.ok) {
+          console.log("fail");
+        } else {
+          console.log("success");
+          const responseData = await response.json();
+          console.log(responseData);
+          setTargetCity(responseData);
+        }
+      })
+      .catch((error) => {
+        console.error("Error fetching data:", error);
+      });
+  }, []);
+
+  useEffect(() => {
+    getNewTarget();
+  }, [getNewTarget]);
+
+  useEffect(() => setGuessArchive([]), [targetCity]);
+
+  const handleInputChange = (e) => {
+    setInputGuess(e.target.value);
+    if (e.target.value === "") {
+      setSuggestions([]);
+    } else getAutocomplete(e.target.value);
+  };
+
+  const getAutocomplete = (input) => {
+    fetch(`https://citywordle.fly.dev/autocomplete/${input}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+    }).then(async (response) => {
+      if (!response.ok) {
+        console.log("fail");
+      } else {
+        const responseData = await response.json();
+        console.log(responseData);
+        setSuggestions(responseData);
+      }
+    });
+  };
+
+  const submitGuess = (guess) => {
+    if (guessArchive.map((city) => city.id).includes(guess)) {
+      return setInputGuess("");
+    }
+    setACIndex((acIndex) => setACIndex(acIndex + 1));
+    setInputGuess("");
+    setSuggestions([]);
+    fetch(`https://citywordle.fly.dev/guess/${guess}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+    })
+      .then(async (response) => {
+        if (!response.ok) {
+          console.log("fail");
+        } else {
+          const responseData = await response.json();
+          console.log("guessed city: ", responseData);
+          //correct guess
+          if (responseData.id === targetCity.id) {
+            modal.current.showModal();
+          } else {
+            responseData.distance = Math.round(
+              haversineDistance(
+                [responseData.lng, responseData.lat],
+                [targetCity.lng, targetCity.lat]
+              )
+            );
+            responseData.bearing = Math.round(
+              getBearing(
+                responseData.lat,
+                responseData.lng,
+                targetCity.lat,
+                targetCity.lng
+              )
+            );
+
+            switch (true) {
+              case responseData.distance === 0:
+                responseData.arrow = "";
+                break;
+              case responseData.bearing > 337.5 || responseData.bearing < 22.5:
+                responseData.arrow = "⬆";
+                break;
+              case responseData.bearing >= 22.5 && responseData.bearing < 67.5:
+                responseData.arrow = "⬈";
+                break;
+              case responseData.bearing >= 67.5 && responseData.bearing < 112.5:
+                responseData.arrow = "➡";
+                break;
+              case responseData.bearing >= 112.5 &&
+                responseData.bearing < 157.5:
+                responseData.arrow = "⬊";
+                break;
+              case responseData.bearing >= 157.5 &&
+                responseData.bearing < 202.5:
+                responseData.arrow = "⬇";
+                break;
+              case responseData.bearing >= 202.5 &&
+                responseData.bearing < 247.5:
+                responseData.arrow = "⬋";
+                break;
+              case responseData.bearing >= 247.5 &&
+                responseData.bearing < 292.5:
+                responseData.arrow = "⬅";
+                break;
+
+              case responseData.bearing >= 292.5 &&
+                responseData.bearing <= 337.5:
+                responseData.arrow = "⬉";
+                break;
+              default:
+                responseData.arrow = "";
+            }
+            setGuessArchive((guessArchive) => [...guessArchive, responseData]);
+          }
+        }
+      })
+      .catch((error) => {
+        console.error("Error fetching data:", error);
+      });
+  };
+
+  const restartGame = () => {
+    modal.current.close();
+    setInputGuess("");
+    getNewTarget();
+    setSuggestions([]);
+    setGuessArchive([]);
+  };
+
+  return (
+    <>
+      <div className="hints">
+        <p className="population">
+          Population: {parseInt(targetCity.strict_pop).toLocaleString()}
+        </p>
+        <p className="urban-area">
+          (Urban area: {parseInt(targetCity.population).toLocaleString()})
+        </p>
+
+        <p>
+          {targetCity.county_name === targetCity.city ? (
+            <span className="county-redacted">[redacted]</span>
+          ) : (
+            targetCity.county_name
+          )}{" "}
+          County
+        </p>
+        <p>{inputGuess}</p>
+      </div>
+
+      <Autocomplete
+        className="autocomplete"
+        disablePortal
+        options={suggestions}
+        getOptionLabel={(option) => `${option.city}, ${option.state_id}`}
+        sx={{ width: 300, color: "primary.main" }}
+        renderInput={(params) => <TextField {...params} label="Enter guess" />}
+        onInputChange={(inputGuess) => handleInputChange(inputGuess)}
+        key={acIndex}
+        onChange={(event, value) => {
+          if (value) {
+            // Make sure value is not null or undefined
+            submitGuess(value.id);
+          }
+        }}
+      />
+      <div className="lower-container">
+        <table className="guess-table">
+          {guessArchive.map((guess) => (
+            <tr key={guess.id}>
+              <td>
+                {guess.city}, {guess.state_id}
+              </td>
+              <td>
+                {guess.distance} km away {guess.arrow}
+              </td>
+            </tr>
+          ))}
+        </table>
+      </div>
+
+      <dialog ref={modal}>
+        <div className="modal">
+          <h1>You got it!</h1>
+          <p className="readmore">
+            <a
+              href={`https://en.wikipedia.org/wiki/${targetCity.city}, ${targetCity.state_id}`}
+              target="_blank"
+            >
+              Read more about <strong>{targetCity.city}</strong> on Wikipedia
+            </a>
+          </p>
+          {targetCity.lat ? (
+            <SimpleMap lat={targetCity.lat} lng={targetCity.lng} />
+          ) : (
+            ""
+          )}
+
+          <button className="playagain" onClick={restartGame}>
+            Play again?
+          </button>
+        </div>
+      </dialog>
+    </>
+  );
+}
+export default App;
