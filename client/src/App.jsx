@@ -11,6 +11,8 @@ function App() {
   const [guessArchive, setGuessArchive] = useState([]);
   const [suggestions, setSuggestions] = useState([]);
   const [acIndex, setACIndex] = useState([]);
+  const [mapkey, setMapkey] = useState(1);
+  const [gameOver, setGameOver] = useState(false);
   let modal = useRef(null);
 
   useEffect(() => {
@@ -68,7 +70,6 @@ function App() {
         console.log("fail");
       } else {
         const responseData = await response.json();
-        console.log(responseData);
         setSuggestions(responseData);
       }
     });
@@ -97,6 +98,8 @@ function App() {
           //correct guess
           if (responseData.id === targetCity.id) {
             modal.current.showModal();
+            setGameOver(true);
+            setMapkey((mapkey) => mapkey + 1);
           } else {
             responseData.distance = Math.round(
               haversineDistance(
@@ -165,6 +168,7 @@ function App() {
     getNewTarget();
     setSuggestions([]);
     setGuessArchive([]);
+    setGameOver(false);
   };
 
   return (
@@ -185,7 +189,6 @@ function App() {
           )}{" "}
           County
         </p>
-        <p>{inputGuess}</p>
       </div>
 
       <Autocomplete
@@ -221,7 +224,11 @@ function App() {
 
       <dialog ref={modal}>
         <div className="modal">
-          <h1>You got it!</h1>
+          <h1>Bingo!</h1>
+          <p>
+            You found the city in <strong>{guessArchive.length + 1}</strong>{" "}
+            guesses.
+          </p>
           <p className="readmore">
             <a
               href={`https://en.wikipedia.org/wiki/${targetCity.city}, ${targetCity.state_id}`}
@@ -231,7 +238,11 @@ function App() {
             </a>
           </p>
           {targetCity.lat ? (
-            <SimpleMap lat={targetCity.lat} lng={targetCity.lng} />
+            <SimpleMap
+              lat={targetCity.lat}
+              lng={targetCity.lng}
+              mapkey={mapkey}
+            />
           ) : (
             ""
           )}
