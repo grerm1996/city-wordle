@@ -3,7 +3,7 @@ import "./App.css";
 import { getBearing, haversineDistance } from "./functions.jsx";
 import TextField from "@mui/material/TextField";
 import Autocomplete from "@mui/material/Autocomplete";
-import SimpleMap from "./Map.jsx";
+import SimpleMap from "./components/Map.jsx";
 
 function App() {
   const [targetCity, setTargetCity] = useState("loading...");

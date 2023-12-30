@@ -10,7 +10,7 @@ const SimpleMap = (props) => {
     if (mapRef.current) {
       mapRef.current.invalidateSize();
     }
-  }, [props.lat, props.lng]); // Run the effect whenever the coordinates change
+  }, [props.gameOver]); // Run the effect whenever the coordinates change
 
   return (
     <MapContainer
