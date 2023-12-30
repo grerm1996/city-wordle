@@ -1,6 +1,5 @@
 import React, { useRef, useEffect } from "react";
 import { MapContainer, TileLayer, Marker } from "react-leaflet";
-import "leaflet/dist/leaflet.css";
 
 const SimpleMap = (props) => {
   const mapRef = useRef(null);
