@@ -70,6 +70,7 @@ function App() {
         console.log("fail");
       } else {
         const responseData = await response.json();
+        console.log(responseData);
         setSuggestions(responseData);
       }
     });
@@ -97,6 +98,7 @@ function App() {
           console.log("guessed city: ", responseData);
           //correct guess
           if (responseData.id === targetCity.id) {
+            setInputGuess("");
             modal.current.showModal();
             setGameOver(true);
             setMapkey((mapkey) => mapkey + 1);
@@ -215,7 +217,8 @@ function App() {
                 {guess.city}, {guess.state_id}
               </td>
               <td>
-                {guess.distance} km away {guess.arrow}
+                {guess.distance} km away{" "}
+                <span className="arrow">{guess.arrow}</span>
               </td>
             </tr>
           ))}
