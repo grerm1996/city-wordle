@@ -174,10 +174,20 @@ function App() {
   };
 
   const filterOptions = (options, { inputValue }) => {
-    const sanitizedInput = inputValue.replace(".", ""); // Remove certain characters
-    const regex = new RegExp(sanitizedInput, "i");
+    const regex = new RegExp(inputValue, "i");
+    return options.filter((option) => {
+      const optionLabel = `${option.city}, ${option.state_id}`;
+      const sanitizedOptionLabel = optionLabel
+        .replace(".", "")
+        .replace("-", " ");
+      return regex.test(optionLabel) || regex.test(sanitizedOptionLabel);
+    });
+  };
+
+  (options, { inputValue }) => {
+    const regex = new RegExp(inputValue, "i");
     return options.filter((option) =>
-      regex.test(`${option.city}, ${option.state_id}`.replace(".", ""))
+      regex.test(`${option.city}`.replace(".", "").replace("-", " "))
     );
   };
 
