@@ -173,13 +173,13 @@ function App() {
     setGameOver(false);
   };
 
-   filterOptions={(options, { inputValue }) => {
-    const sanitizedInput = inputValue.replace('.', ''); // Remove certain characters
-    const regex = new RegExp(sanitizedInput, 'i');
-    return options.filter(
-      (option) => regex.test(`${option.city}, ${option.state_id}`.replace('.', ''))
+  const filterOptions = (options, { inputValue }) => {
+    const sanitizedInput = inputValue.replace(".", ""); // Remove certain characters
+    const regex = new RegExp(sanitizedInput, "i");
+    return options.filter((option) =>
+      regex.test(`${option.city}, ${option.state_id}`.replace(".", ""))
     );
-  }}
+  };
 
   return (
     <>
@@ -204,6 +204,7 @@ function App() {
       <Autocomplete
         className="autocomplete"
         disablePortal
+        filterOptions={filterOptions}
         options={suggestions}
         getOptionLabel={(option) => `${option.city}, ${option.state_id}`}
         sx={{ width: 300, color: "primary.main" }}
