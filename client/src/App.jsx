@@ -173,6 +173,14 @@ function App() {
     setGameOver(false);
   };
 
+  const filterOptions = (options, { inputValue }) => {
+    const sanitizedInput = inputValue.replace(".", ""); // Remove certain characters
+    const regex = new RegExp(sanitizedInput, "i");
+    return options.filter((option) =>
+      regex.test(option.label.replace(".", ""))
+    );
+  };
+
   return (
     <>
       <div className="hints">
@@ -197,6 +205,7 @@ function App() {
         className="autocomplete"
         disablePortal
         options={suggestions}
+        filterOptions={filterOptions}
         getOptionLabel={(option) => `${option.city}, ${option.state_id}`}
         sx={{ width: 300, color: "primary.main" }}
         renderInput={(params) => <TextField {...params} label="Enter guess" />}
