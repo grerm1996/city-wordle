@@ -6,7 +6,7 @@ import Autocomplete from "@mui/material/Autocomplete";
 import SimpleMap from "./components/Map.jsx";
 
 function App() {
-  const [targetCity, setTargetCity] = useState("loading...");
+  const [targetCity, setTargetCity] = useState("");
   const [inputGuess, setInputGuess] = useState("");
   const [guessArchive, setGuessArchive] = useState([]);
   const [suggestions, setSuggestions] = useState([]);
@@ -193,41 +193,49 @@ function App() {
 
   return (
     <>
-      <div className="hints">
-        <p className="population">
-          Population: {parseInt(targetCity.strict_pop).toLocaleString()}
-        </p>
-        <p className="urban-area">
-          (Urban area: {parseInt(targetCity.population).toLocaleString()})
-        </p>
+      {targetCity ? (
+        <>
+          <div className="hints">
+            <p className="population">
+              Population: {parseInt(targetCity.strict_pop).toLocaleString()}
+            </p>
+            <p className="urban-area">
+              (Urban area: {parseInt(targetCity.population).toLocaleString()})
+            </p>
 
-        <p>
-          {targetCity.county_name === targetCity.city ? (
-            <span className="county-redacted">[redacted]</span>
-          ) : (
-            targetCity.county_name
-          )}{" "}
-          County
-        </p>
-      </div>
+            <p>
+              {targetCity.county_name === targetCity.city ? (
+                <span className="county-redacted">[redacted]</span>
+              ) : (
+                targetCity.county_name
+              )}{" "}
+              County
+            </p>
+          </div>
+          <Autocomplete
+            className="autocomplete"
+            disablePortal
+            filterOptions={filterOptions}
+            options={suggestions}
+            getOptionLabel={(option) => `${option.city}, ${option.state_id}`}
+            sx={{ width: 300, color: "primary.main" }}
+            renderInput={(params) => (
+              <TextField {...params} label="Enter guess" />
+            )}
+            onInputChange={(inputGuess) => handleInputChange(inputGuess)}
+            key={acIndex}
+            onChange={(event, value) => {
+              if (value) {
+                // Make sure value is not null or undefined
+                submitGuess(value.id);
+              }
+            }}
+          />
+        </>
+      ) : (
+        <div class="lds-dual-ring"></div>
+      )}
 
-      <Autocomplete
-        className="autocomplete"
-        disablePortal
-        filterOptions={filterOptions}
-        options={suggestions}
-        getOptionLabel={(option) => `${option.city}, ${option.state_id}`}
-        sx={{ width: 300, color: "primary.main" }}
-        renderInput={(params) => <TextField {...params} label="Enter guess" />}
-        onInputChange={(inputGuess) => handleInputChange(inputGuess)}
-        key={acIndex}
-        onChange={(event, value) => {
-          if (value) {
-            // Make sure value is not null or undefined
-            submitGuess(value.id);
-          }
-        }}
-      />
       <div className="lower-container">
         <table className="guess-table">
           {guessArchive.map((guess) => (
