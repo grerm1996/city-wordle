@@ -47,7 +47,7 @@ app.get("/", (request, response) => {
 
 app.get("/canada", (request, response) => {
   client.query(
-    "SELECT * FROM canadacities ORDER BY random() LIMIT 1;",
+    "SELECT * FROM canadacities WHERE population > 100000 ORDER BY random() LIMIT 1;",
     (err, res) => {
       if (err) {
         console.error("Error executing query", err);
@@ -99,6 +99,23 @@ app.get("/autocomplete/:input", (req, response) => {
       }
     );
   }
+});
+
+app.get("/canadaautocomplete/:input", (req, response) => {
+  let input = req.params.input.trim().replace(/^[,\s]+|[,\s]+$/g, "");
+
+  client.query(
+    "SELECT city, province_id as state_id, id FROM canadacities WHERE REPLACE(REPLACE(city, '.', ''), '-', ' ') ILIKE $1 || '%' OR city ILIKE $1 || '%' LIMIT 4",
+    [input],
+    (err, res) => {
+      if (err) {
+        console.error("Error executing query", err);
+        response.status(500).json({ error: "Error executing query" });
+      } else {
+        response.json(res.rows);
+      }
+    }
+  );
 });
 
 function handleQueryResult(err, res, response) {
