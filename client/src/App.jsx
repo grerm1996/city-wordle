@@ -253,7 +253,9 @@ function App() {
     <ThemeProvider theme={darkTheme}>
       <div className={`app ${darkMode ? "dark-mode" : ""}`}>
         <DarkModeToggle darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
-        <button onClick={toggleMode}>{isCanadianMode ? "🇺🇸" : "🇨🇦"}</button>
+        <div className="flag-toggle" onClick={toggleMode}>
+          {isCanadianMode ? "🇺🇸" : "🇨🇦"}
+        </div>
         {isLoading ? (
           <div className="lds-dual-ring"></div>
         ) : targetCity ? (

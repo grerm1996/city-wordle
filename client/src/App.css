@@ -14,6 +14,22 @@ body {
   color: #242424;
 }
 
+.flag-toggle {
+  font-size: 3rem; /* Increase the size of the flag */
+  cursor: pointer;
+  user-select: none;
+  display: inline-block;
+  transition: transform 0.2s ease;
+}
+
+.flag-toggle:hover {
+  transform: scale(1.1);
+}
+
+.flag-toggle:active {
+  transform: scale(0.95);
+}
+
 #root {
   min-height: 100vh;
   width: 100%;
