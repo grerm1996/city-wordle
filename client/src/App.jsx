@@ -5,6 +5,8 @@ import TextField from "@mui/material/TextField";
 import Autocomplete from "@mui/material/Autocomplete";
 import SimpleMap from "./components/Map.jsx";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
+import WbSunnyIcon from "@mui/icons-material/WbSunny";
+import ModeNightIcon from "@mui/icons-material/ModeNight";
 
 function App() {
   const [targetCity, setTargetCity] = useState("");
@@ -37,14 +39,8 @@ function App() {
 
   function DarkModeToggle({ darkMode, toggleDarkMode }) {
     return (
-      <div className="dark-mode-toggle">
-        <input
-          type="checkbox"
-          id="dark-mode-toggle"
-          checked={darkMode}
-          onChange={toggleDarkMode}
-        />
-        <label htmlFor="dark-mode-toggle">Dark Mode</label>
+      <div className="dark-mode-toggle" onClick={toggleDarkMode}>
+        {darkMode ? <ModeNightIcon /> : <WbSunnyIcon />}
       </div>
     );
   }
@@ -252,9 +248,12 @@ function App() {
   return (
     <ThemeProvider theme={darkTheme}>
       <div className={`app ${darkMode ? "dark-mode" : ""}`}>
-        <DarkModeToggle darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
-        <div className="flag-toggle" onClick={toggleMode}>
-          {isCanadianMode ? "🇺🇸" : "🇨🇦"}
+        <div className="icon-holder">
+          {" "}
+          <DarkModeToggle darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
+          <div className="flag-toggle" onClick={toggleMode}>
+            {isCanadianMode ? "🇨🇦" : "🇺🇸"}
+          </div>
         </div>
         {isLoading ? (
           <div className="lds-dual-ring"></div>
