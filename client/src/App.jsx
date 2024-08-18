@@ -23,6 +23,10 @@ function App() {
     return saved ? JSON.parse(saved) : false;
   });
 
+  function removeDiacritics(str) {
+    return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  }
+
   const [isCanadianMode, setIsCanadianMode] = useState(() => {
     const saved = localStorage.getItem("canadianMode");
     return saved ? JSON.parse(saved) : false;
@@ -67,7 +71,6 @@ function App() {
       localStorage.setItem("canadianMode", JSON.stringify(newMode));
       return newMode;
     });
-    getNewTarget(); // Fetch a new target city when mode changes
   };
 
   const getNewTarget = useCallback(() => {
@@ -108,7 +111,7 @@ function App() {
 
   useEffect(() => {
     getNewTarget();
-  }, [getNewTarget]);
+  }, [getNewTarget, isCanadianMode]);
 
   useEffect(() => setGuessArchive([]), [targetCity]);
 
@@ -222,16 +225,15 @@ function App() {
   };
 
   const filterOptions = (options, { inputValue }) => {
-    const regex = new RegExp(inputValue, "i");
+    const normalizedInput = removeDiacritics(inputValue.toLowerCase());
     return options.filter((option) => {
-      const optionLabel = `${option.city}, ${option.state_id}`;
-      const sanitizedOptionLabel = optionLabel
-        .replace(".", "")
-        .replace("-", " ");
-      return regex.test(optionLabel) || regex.test(sanitizedOptionLabel);
+      const optionLabel = `${option.city}, ${
+        option.state_id || option.province_id
+      }`;
+      const normalizedLabel = removeDiacritics(optionLabel.toLowerCase());
+      return normalizedLabel.includes(normalizedInput);
     });
   };
-
   (options, { inputValue }) => {
     const regex = new RegExp(inputValue, "i");
     return options.filter((option) =>
@@ -301,7 +303,9 @@ function App() {
               value={autocompleteValue}
               filterOptions={filterOptions}
               options={suggestions}
-              getOptionLabel={(option) => `${option.city}, ${option.state_id}`}
+              getOptionLabel={(option) =>
+                `${option.city}, ${option.state_id || option.province_id}`
+              }
               sx={{
                 width: 300,
                 "& .MuiAutocomplete-input": {

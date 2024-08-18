@@ -254,15 +254,9 @@ body.dark-mode,
   color: #ffffff;
 }
 
-.dark-mode .playagain {
-  background-color: #333;
-  color: #ffffff;
-  border-color: #ffffff;
-  box-shadow: #ffffff 4px 4px 0 0;
-}
-
 .dark-mode .playagain:hover {
-  background-color: #444;
+  background-color: #f6ff72;
+  border-color: #90caf9;
 }
 
 .dark-mode .playagain:active {
